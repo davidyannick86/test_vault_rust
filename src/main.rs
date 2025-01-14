@@ -3,8 +3,7 @@ use std::env;
 use vaultrs::client::{VaultClient, VaultClientSettingsBuilder};
 use vaultrs::kv2;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn create_client() -> Result<VaultClient, Box<dyn std::error::Error>> {
     // Charge le fichier .env
     dotenv().ok();
 
@@ -20,14 +19,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .build()?,
     )?;
 
+    Ok(client)
+}
+
+async fn get_key(
+    client: &VaultClient,
+    key_name: &str,
+) -> Result<String, Box<dyn std::error::Error>> {
     // Lecture du secret
     let secret: std::collections::HashMap<String, String> =
-        kv2::read(&client, "secret", "test/secret").await?;
+        kv2::read(client, "secret", "test/secret").await?;
+
+    Ok(secret[key_name].clone())
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = create_client().await?;
+
+    // Lecture du secret
+    let secret = get_key(&client, "tagada").await?;
 
     // Pour accéder à la valeur spécifique "tagada"
-    if let Some(value) = secret.get("tagada") {
-        println!("Contenu du secret 'tagada': {:?}", value);
-    }
+    println!("tagada: {:?}", secret);
 
     Ok(())
 }
