@@ -38,10 +38,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = create_client().await?;
 
     // Lecture du secret
-    let secret = get_key(&client, "tagada").await?;
+    let secret = get_key(&client, "tagada").await;
 
-    // Pour accéder à la valeur spécifique "tagada"
-    println!("tagada: {:?}", secret);
+    match secret {
+        Ok(_) => println!("Secret tagada lu avec succès : {:?}", secret.unwrap()),
+        Err(e) => println!("Erreur lors de la lecture du secret tagada: {:?}", e),
+    }
 
     Ok(())
 }
